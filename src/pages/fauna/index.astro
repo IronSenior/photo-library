@@ -1,0 +1,43 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import FilterBar from '../../components/FilterBar.astro';
+import { getCollection } from 'astro:content';
+import { slugify } from '../../utils/slugify';
+
+const species = await getCollection('species');
+
+const clasesMap = new Map<string, { label: string; slug: string; especies: typeof species }>();
+for (const sp of species) {
+  const slug = slugify(sp.data.clase);
+  if (!clasesMap.has(slug)) clasesMap.set(slug, { label: sp.data.clase, slug, especies: [] });
+  clasesMap.get(slug)!.especies.push(sp);
+}
+const clases = Array.from(clasesMap.values()).sort((a, b) => a.label.localeCompare(b.label));
+---
+
+<BaseLayout title="Fauna" description="Fotografía de fauna organizada por clase, orden y especie.">
+  <Breadcrumbs items={[{ label: 'Fauna' }]} />
+  <h1>Fauna</h1>
+  <p>Explora la fototeca de fauna organizada por clase, orden y especie.</p>
+
+  <FilterBar itemSelector="[data-clase-card]" placeholder="Buscar clase o especie…" />
+
+  <div class="card-grid">
+    {
+      clases.map((clase) => (
+        <a
+          class="tile-card"
+          data-clase-card
+          data-search={`${clase.label} ${clase.especies.map((e) => e.data.nombre_comun).join(' ')}`}
+          href={`/fauna/${clase.slug}`}
+        >
+          <h3>{clase.label}</h3>
+          <p>
+            {clase.especies.length} especie{clase.especies.length === 1 ? '' : 's'}
+          </p>
+        </a>
+      ))
+    }
+  </div>
+</BaseLayout>

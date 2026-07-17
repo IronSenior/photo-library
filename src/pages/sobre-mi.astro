@@ -1,0 +1,22 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+---
+
+<BaseLayout title="Sobre mí" description="Bio, equipo y canales del autor de Objetivo Salvaje.">
+  <Breadcrumbs items={[{ label: 'Sobre mí' }]} />
+  <h1>Sobre mí</h1>
+  <p>
+    Fotógrafo aficionado a la fauna, los viajes y la vida al aire libre. Este portfolio recoge una selección de
+    fotografías organizadas por especie, lugar y evento, publicadas a medida que se van dando las salidas.
+  </p>
+
+  <h2>Equipo</h2>
+  <p>Cámaras y objetivos habituales: Canon EOS R5 + RF 100-500mm, Sony A1 + FE 200-600mm.</p>
+
+  <h2>Canales</h2>
+  <ul>
+    <li><a href="https://instagram.com" rel="me">Outdoor.Pepe</a></li>
+    <li><a href="https://youtube.com" rel="me">SoyPepe.Lab</a></li>
+  </ul>
+</BaseLayout>

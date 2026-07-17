@@ -1,0 +1,78 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../../components/Breadcrumbs.astro';
+import PhotoCard from '../../../components/PhotoCard.astro';
+import { getCollection, getEntry } from 'astro:content';
+import { slugify } from '../../../utils/slugify';
+import { getOgImageUrl } from '../../../utils/images';
+
+export async function getStaticPaths() {
+  const species = await getCollection('species');
+  return species.map((sp) => ({ params: { id: sp.id } }));
+}
+
+const { id } = Astro.params;
+const species = await getEntry('species', id!);
+if (!species) throw new Error(`Especie no encontrada: ${id}`);
+
+const photos = (await getCollection('faunaPhotos'))
+  .filter((p) => p.data.especie.id === species.id)
+  .sort((a, b) => b.data.fecha.valueOf() - a.data.fecha.valueOf());
+
+const claseSlug = slugify(species.data.clase);
+const ordenSlug = slugify(species.data.orden);
+const coverPhoto = photos.find((p) => p.data.destacada) ?? photos[0];
+const ogImage = coverPhoto ? await getOgImageUrl(coverPhoto.data.imagen, coverPhoto.data.ancho, coverPhoto.data.alto) : undefined;
+---
+
+<BaseLayout
+  title={species.data.nombre_comun}
+  description={species.data.descripcion ?? `Fotografías de ${species.data.nombre_comun} (${species.data.nombre_cientifico}).`}
+  image={ogImage}
+>
+  <Breadcrumbs
+    items={[
+      { label: 'Fauna', href: '/fauna' },
+      { label: species.data.clase, href: `/fauna/${claseSlug}` },
+      { label: species.data.orden, href: `/fauna/${claseSlug}/${ordenSlug}` },
+      { label: species.data.nombre_comun },
+    ]}
+  />
+
+  <h1>{species.data.nombre_comun}</h1>
+  <p class="meta-list">
+    <em>{species.data.nombre_cientifico}</em>
+    {species.data.familia && ` · ${species.data.familia}`}
+  </p>
+  {species.data.estado_conservacion && (
+    <p class="tag-list">
+      <span class="tag">{species.data.estado_conservacion}</span>
+    </p>
+  )}
+  {species.data.descripcion && <p>{species.data.descripcion}</p>}
+
+  <div class="section">
+    <div class="section__header">
+      <h2>Fotos ({photos.length})</h2>
+    </div>
+    {
+      photos.length === 0 ? (
+        <p>Todavía no hay fotos publicadas de esta especie.</p>
+      ) : (
+        <div class="photo-grid">
+          {photos.map((photo) => (
+            <PhotoCard
+              id={photo.id}
+              imagen={photo.data.imagen}
+              titulo={photo.data.titulo}
+              subtitulo={photo.data.ubicacion}
+              ancho={photo.data.ancho}
+              alto={photo.data.alto}
+              galleryGroup={`especie-${species.id}`}
+            />
+          ))}
+        </div>
+      )
+    }
+  </div>
+</BaseLayout>

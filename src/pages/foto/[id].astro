@@ -1,0 +1,112 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import { Image } from 'astro:assets';
+import { getCollection, getEntry } from 'astro:content';
+import { getPhotoById } from '../../utils/photos';
+import { resolvePhotoSrc, FALLBACK_WIDTH, FALLBACK_HEIGHT, isRemotePhoto, getOgImageUrl } from '../../utils/images';
+import { getExifSummary } from '../../utils/exif';
+import { slugify } from '../../utils/slugify';
+
+export async function getStaticPaths() {
+  const [fauna, viajes, eventos] = await Promise.all([
+    getCollection('faunaPhotos'),
+    getCollection('travelPhotos'),
+    getCollection('eventPhotos'),
+  ]);
+  return [...fauna, ...viajes, ...eventos].map((p) => ({ params: { id: p.id } }));
+}
+
+const { id } = Astro.params;
+const result = await getPhotoById(id!);
+if (!result) throw new Error(`Foto no encontrada: ${id}`);
+const { categoria, entry: photo } = result;
+
+const src = resolvePhotoSrc(photo.data.imagen);
+const remote = isRemotePhoto(src);
+
+let breadcrumbItems: { label: string; href?: string }[] = [{ label: photo.data.titulo }];
+
+if (categoria === 'fauna') {
+  const species = await getEntry(photo.data.especie);
+  if (species) {
+    const claseSlug = slugify(species.data.clase);
+    const ordenSlug = slugify(species.data.orden);
+    breadcrumbItems = [
+      { label: 'Fauna', href: '/fauna' },
+      { label: species.data.clase, href: `/fauna/${claseSlug}` },
+      { label: species.data.orden, href: `/fauna/${claseSlug}/${ordenSlug}` },
+      { label: species.data.nombre_comun, href: `/fauna/especie/${species.id}` },
+      { label: photo.data.titulo },
+    ];
+  }
+} else if (categoria === 'viaje') {
+  const travel = await getEntry(photo.data.viaje);
+  if (travel) {
+    const paisSlug = slugify(travel.data.pais);
+    breadcrumbItems = [
+      { label: 'Viajes', href: '/viajes' },
+      { label: travel.data.pais, href: `/viajes/${paisSlug}` },
+      { label: travel.data.lugar, href: `/viajes/${paisSlug}/${travel.id}` },
+      { label: photo.data.titulo },
+    ];
+  }
+} else {
+  const event = await getEntry(photo.data.evento);
+  if (event) {
+    breadcrumbItems = [
+      { label: 'Eventos', href: '/eventos' },
+      { label: event.data.nombre, href: `/eventos/${event.id}` },
+      { label: photo.data.titulo },
+    ];
+  }
+}
+
+const exif = await getExifSummary(photo.data.imagen);
+const ogImage = await getOgImageUrl(photo.data.imagen, photo.data.ancho, photo.data.alto);
+---
+
+<BaseLayout title={photo.data.titulo} description={photo.data.ubicacion ?? photo.data.titulo} image={ogImage}>
+  <Breadcrumbs items={breadcrumbItems} />
+  <h1>{photo.data.titulo}</h1>
+
+  <figure>
+    {
+      remote ? (
+        <Image
+          src={src}
+          alt={photo.data.titulo}
+          width={photo.data.ancho ?? FALLBACK_WIDTH}
+          height={photo.data.alto ?? FALLBACK_HEIGHT}
+        />
+      ) : (
+        <Image src={src} alt={photo.data.titulo} width={Math.min(src.width, 1800)} />
+      )
+    }
+  </figure>
+
+  <p class="meta-list">
+    {photo.data.fecha.toLocaleDateString('es-ES')}
+    {photo.data.ubicacion && ` · ${photo.data.ubicacion}`}
+  </p>
+
+  {
+    (exif?.camara || photo.data.equipo) && (
+      <p class="meta-list">
+        {exif?.camara ?? photo.data.equipo}
+        {exif?.objetivo && ` · ${exif.objetivo}`}
+        {exif?.exposicion && ` · ${exif.exposicion}`}
+      </p>
+    )
+  }
+
+  {
+    photo.data.tags.length > 0 && (
+      <p class="tag-list">
+        {photo.data.tags.map((tag) => (
+          <span class="tag">{tag}</span>
+        ))}
+      </p>
+    )
+  }
+</BaseLayout>

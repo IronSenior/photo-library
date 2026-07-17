@@ -1,0 +1,77 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import FilterBar from '../../components/FilterBar.astro';
+import TravelMap from '../../components/TravelMap';
+import { getCollection } from 'astro:content';
+import { getImage } from 'astro:assets';
+import { slugify } from '../../utils/slugify';
+import { resolvePhotoSrc, isRemotePhoto } from '../../utils/images';
+
+const travels = await getCollection('travels');
+const travelPhotos = await getCollection('travelPhotos');
+
+function coverFor(travelId: string) {
+  const photos = travelPhotos.filter((p) => p.data.viaje.id === travelId);
+  return photos.find((p) => p.data.destacada) ?? photos[0];
+}
+
+const pins = await Promise.all(
+  travels
+    .filter((t) => typeof t.data.lat === 'number' && typeof t.data.lng === 'number')
+    .map(async (t) => {
+      const cover = coverFor(t.id);
+      let thumbnail: string | undefined;
+      if (cover) {
+        const src = resolvePhotoSrc(cover.data.imagen);
+        const image = isRemotePhoto(src)
+          ? await getImage({ src, width: 240, height: 160 })
+          : await getImage({ src, width: 240 });
+        thumbnail = image.src;
+      }
+      return {
+        lat: t.data.lat as number,
+        lng: t.data.lng as number,
+        titulo: t.data.lugar,
+        href: `/viajes/${slugify(t.data.pais)}/${t.id}`,
+        thumbnail,
+      };
+    })
+);
+
+const paisesMap = new Map<string, { label: string; slug: string; lugares: typeof travels }>();
+for (const t of travels) {
+  const slug = slugify(t.data.pais);
+  if (!paisesMap.has(slug)) paisesMap.set(slug, { label: t.data.pais, slug, lugares: [] });
+  paisesMap.get(slug)!.lugares.push(t);
+}
+const paises = Array.from(paisesMap.values()).sort((a, b) => a.label.localeCompare(b.label));
+---
+
+<BaseLayout title="Viajes" description="Mapa interactivo y lugares visitados durante los viajes.">
+  <Breadcrumbs items={[{ label: 'Viajes' }]} />
+  <h1>Viajes</h1>
+  <p>Explora los lugares visitados en el mapa o navega por país.</p>
+
+  <TravelMap client:only="react" pins={pins} />
+
+  <FilterBar itemSelector="[data-pais-card]" placeholder="Buscar país o lugar…" />
+
+  <div class="card-grid">
+    {
+      paises.map((pais) => (
+        <a
+          class="tile-card"
+          data-pais-card
+          data-search={`${pais.label} ${pais.lugares.map((l) => l.data.lugar).join(' ')}`}
+          href={`/viajes/${pais.slug}`}
+        >
+          <h3>{pais.label}</h3>
+          <p>
+            {pais.lugares.length} lugar{pais.lugares.length === 1 ? '' : 'es'}
+          </p>
+        </a>
+      ))
+    }
+  </div>
+</BaseLayout>

@@ -1,0 +1,88 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PhotoCard from '../components/PhotoCard.astro';
+import { Image } from 'astro:assets';
+import { getCollection } from 'astro:content';
+import { resolvePhotoSrc, FALLBACK_WIDTH, FALLBACK_HEIGHT, isRemotePhoto } from '../utils/images';
+
+const [fauna, viajes, eventos] = await Promise.all([
+  getCollection('faunaPhotos'),
+  getCollection('travelPhotos'),
+  getCollection('eventPhotos'),
+]);
+
+const allPhotos = [
+  ...fauna.map((p) => ({ ...p, categoria: 'fauna' as const })),
+  ...viajes.map((p) => ({ ...p, categoria: 'viaje' as const })),
+  ...eventos.map((p) => ({ ...p, categoria: 'evento' as const })),
+].sort((a, b) => b.data.fecha.valueOf() - a.data.fecha.valueOf());
+
+const destacadas = allPhotos.filter((p) => p.data.destacada);
+const hero = destacadas[0] ?? allPhotos[0];
+const heroSrc = resolvePhotoSrc(hero.data.imagen);
+const heroRemote = isRemotePhoto(heroSrc);
+
+const featuredGrid = (destacadas.length > 1 ? destacadas.slice(1) : allPhotos.filter((p) => p.id !== hero.id)).slice(
+  0,
+  7
+);
+---
+
+<BaseLayout
+  title="Inicio"
+  description="Portfolio fotográfico de fauna, viajes y eventos, organizado por especie, lugar y evento."
+>
+  <section class="hero">
+    {
+      heroRemote ? (
+        <Image
+          src={heroSrc}
+          alt={hero.data.titulo}
+          width={hero.data.ancho ?? FALLBACK_WIDTH}
+          height={hero.data.alto ?? FALLBACK_HEIGHT}
+        />
+      ) : (
+        <Image src={heroSrc} alt={hero.data.titulo} width={1800} />
+      )
+    }
+    <div class="hero__content">
+      <h1>{hero.data.titulo}</h1>
+      <p><a href={`/foto/${hero.id}`}>Ver foto →</a></p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section__header">
+      <h2>Selección destacada</h2>
+    </div>
+    <div class="photo-grid">
+      {
+        featuredGrid.map((photo) => (
+          <PhotoCard
+            id={photo.id}
+            imagen={photo.data.imagen}
+            titulo={photo.data.titulo}
+            ancho={photo.data.ancho}
+            alto={photo.data.alto}
+            galleryGroup="home"
+          />
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="section card-grid">
+    <a class="tile-card" href="/fauna">
+      <h3>Fauna</h3>
+      <p>Explora por clase, orden y especie.</p>
+    </a>
+    <a class="tile-card" href="/viajes">
+      <h3>Viajes</h3>
+      <p>Mapa interactivo y lugares visitados.</p>
+    </a>
+    <a class="tile-card" href="/eventos">
+      <h3>Eventos</h3>
+      <p>Conciertos, conferencias y otros eventos.</p>
+    </a>
+  </section>
+</BaseLayout>

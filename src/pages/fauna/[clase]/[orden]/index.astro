@@ -1,0 +1,83 @@
+---
+import BaseLayout from '../../../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../../../components/Breadcrumbs.astro';
+import PhotoCard from '../../../../components/PhotoCard.astro';
+import { getCollection } from 'astro:content';
+import { slugify } from '../../../../utils/slugify';
+
+export async function getStaticPaths() {
+  const species = await getCollection('species');
+  const seen = new Map<string, { claseLabel: string; ordenLabel: string }>();
+  for (const sp of species) {
+    const key = `${slugify(sp.data.clase)}/${slugify(sp.data.orden)}`;
+    if (!seen.has(key)) seen.set(key, { claseLabel: sp.data.clase, ordenLabel: sp.data.orden });
+  }
+  return Array.from(seen.entries()).map(([key, info]) => {
+    const [clase, orden] = key.split('/');
+    return { params: { clase, orden }, props: info };
+  });
+}
+
+interface Props {
+  claseLabel: string;
+  ordenLabel: string;
+}
+
+const { clase, orden } = Astro.params;
+const { claseLabel, ordenLabel } = Astro.props;
+
+const species = (await getCollection('species')).filter(
+  (sp) => slugify(sp.data.clase) === clase && slugify(sp.data.orden) === orden
+);
+
+const faunaPhotos = await getCollection('faunaPhotos');
+function coverFor(speciesId: string) {
+  return faunaPhotos.find((p) => p.data.especie.id === speciesId);
+}
+---
+
+<BaseLayout title={`${ordenLabel} · ${claseLabel}`} description={`Especies del orden ${ordenLabel}.`}>
+  <Breadcrumbs
+    items={[
+      { label: 'Fauna', href: '/fauna' },
+      { label: claseLabel, href: `/fauna/${clase}` },
+      { label: ordenLabel },
+    ]}
+  />
+  <h1>{ordenLabel}</h1>
+  <p class="meta-list">{claseLabel}</p>
+
+  <div class="photo-grid">
+    {
+      species.map((sp) => {
+        const cover = coverFor(sp.id);
+        return cover ? (
+          <PhotoCard
+            id={cover.id}
+            imagen={cover.data.imagen}
+            titulo={sp.data.nombre_comun}
+            subtitulo={sp.data.nombre_cientifico}
+            ancho={cover.data.ancho}
+            alto={cover.data.alto}
+            galleryGroup={`orden-${orden}`}
+          />
+        ) : null;
+      })
+    }
+  </div>
+
+  <ul class="card-grid" style="list-style:none;padding:0;">
+    {
+      species.map((sp) => (
+        <li>
+          <a class="tile-card" href={`/fauna/especie/${sp.id}`}>
+            <h3>{sp.data.nombre_comun}</h3>
+            <p>
+              <em>{sp.data.nombre_cientifico}</em>
+            </p>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</BaseLayout>

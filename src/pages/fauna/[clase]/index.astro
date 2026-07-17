@@ -1,0 +1,54 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../../components/Breadcrumbs.astro';
+import { getCollection } from 'astro:content';
+import { slugify } from '../../../utils/slugify';
+
+export async function getStaticPaths() {
+  const species = await getCollection('species');
+  const clasesMap = new Map<string, string>();
+  for (const sp of species) {
+    const slug = slugify(sp.data.clase);
+    if (!clasesMap.has(slug)) clasesMap.set(slug, sp.data.clase);
+  }
+  return Array.from(clasesMap.entries()).map(([slug, label]) => ({
+    params: { clase: slug },
+    props: { claseLabel: label },
+  }));
+}
+
+interface Props {
+  claseLabel: string;
+}
+
+const { clase } = Astro.params;
+const { claseLabel } = Astro.props;
+
+const species = (await getCollection('species')).filter((sp) => slugify(sp.data.clase) === clase);
+
+const ordenesMap = new Map<string, { label: string; slug: string; especies: typeof species }>();
+for (const sp of species) {
+  const slug = slugify(sp.data.orden);
+  if (!ordenesMap.has(slug)) ordenesMap.set(slug, { label: sp.data.orden, slug, especies: [] });
+  ordenesMap.get(slug)!.especies.push(sp);
+}
+const ordenes = Array.from(ordenesMap.values()).sort((a, b) => a.label.localeCompare(b.label));
+---
+
+<BaseLayout title={claseLabel} description={`Especies de ${claseLabel} organizadas por orden.`}>
+  <Breadcrumbs items={[{ label: 'Fauna', href: '/fauna' }, { label: claseLabel }]} />
+  <h1>{claseLabel}</h1>
+
+  <div class="card-grid">
+    {
+      ordenes.map((orden) => (
+        <a class="tile-card" href={`/fauna/${clase}/${orden.slug}`}>
+          <h3>{orden.label}</h3>
+          <p>
+            {orden.especies.length} especie{orden.especies.length === 1 ? '' : 's'}
+          </p>
+        </a>
+      ))
+    }
+  </div>
+</BaseLayout>

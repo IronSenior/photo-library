@@ -1,0 +1,42 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import FilterBar from '../../components/FilterBar.astro';
+import PhotoCard from '../../components/PhotoCard.astro';
+import { getCollection } from 'astro:content';
+
+const events = (await getCollection('events')).sort((a, b) => b.data.fecha.valueOf() - a.data.fecha.valueOf());
+const eventPhotos = await getCollection('eventPhotos');
+
+function coverFor(eventId: string) {
+  const photos = eventPhotos.filter((p) => p.data.evento.id === eventId);
+  return photos.find((p) => p.data.destacada) ?? photos[0];
+}
+---
+
+<BaseLayout title="Eventos" description="Conciertos, conferencias y otros eventos fotografiados.">
+  <Breadcrumbs items={[{ label: 'Eventos' }]} />
+  <h1>Eventos</h1>
+
+  <FilterBar itemSelector=".photo-grid .photo-card" placeholder="Buscar evento o lugar…" />
+
+  <div class="photo-grid">
+    {
+      events.map((event) => {
+        const cover = coverFor(event.id);
+        return cover ? (
+          <PhotoCard
+            id={cover.id}
+            imagen={cover.data.imagen}
+            titulo={event.data.nombre}
+            subtitulo={event.data.lugar}
+            ancho={cover.data.ancho}
+            alto={cover.data.alto}
+            galleryGroup="eventos"
+            data-search={`${event.data.nombre} ${event.data.lugar ?? ''} ${event.data.tipo}`}
+          />
+        ) : null;
+      })
+    }
+  </div>
+</BaseLayout>

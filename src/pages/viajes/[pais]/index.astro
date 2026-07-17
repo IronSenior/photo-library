@@ -1,0 +1,69 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../../components/Breadcrumbs.astro';
+import PhotoCard from '../../../components/PhotoCard.astro';
+import { getCollection } from 'astro:content';
+import { slugify } from '../../../utils/slugify';
+
+export async function getStaticPaths() {
+  const travels = await getCollection('travels');
+  const seen = new Map<string, string>();
+  for (const t of travels) {
+    const slug = slugify(t.data.pais);
+    if (!seen.has(slug)) seen.set(slug, t.data.pais);
+  }
+  return Array.from(seen.entries()).map(([slug, label]) => ({ params: { pais: slug }, props: { paisLabel: label } }));
+}
+
+interface Props {
+  paisLabel: string;
+}
+
+const { pais } = Astro.params;
+const { paisLabel } = Astro.props;
+
+const travels = (await getCollection('travels')).filter((t) => slugify(t.data.pais) === pais);
+const travelPhotos = await getCollection('travelPhotos');
+
+function coverFor(travelId: string) {
+  const photos = travelPhotos.filter((p) => p.data.viaje.id === travelId);
+  return photos.find((p) => p.data.destacada) ?? photos[0];
+}
+---
+
+<BaseLayout title={paisLabel} description={`Viajes y lugares visitados en ${paisLabel}.`}>
+  <Breadcrumbs items={[{ label: 'Viajes', href: '/viajes' }, { label: paisLabel }]} />
+  <h1>{paisLabel}</h1>
+
+  <div class="photo-grid">
+    {
+      travels.map((t) => {
+        const cover = coverFor(t.id);
+        return cover ? (
+          <PhotoCard
+            id={cover.id}
+            imagen={cover.data.imagen}
+            titulo={t.data.lugar}
+            subtitulo={cover.data.ubicacion}
+            ancho={cover.data.ancho}
+            alto={cover.data.alto}
+            galleryGroup={`pais-${pais}`}
+          />
+        ) : null;
+      })
+    }
+  </div>
+
+  <ul class="card-grid" style="list-style:none;padding:0;">
+    {
+      travels.map((t) => (
+        <li>
+          <a class="tile-card" href={`/viajes/${pais}/${t.id}`}>
+            <h3>{t.data.lugar}</h3>
+            <p>{t.data.fecha_inicio?.toLocaleDateString('es-ES')}</p>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</BaseLayout>

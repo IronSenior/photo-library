@@ -1,0 +1,55 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import PhotoCard from '../../components/PhotoCard.astro';
+import { getCollection, getEntry } from 'astro:content';
+import { getOgImageUrl } from '../../utils/images';
+
+export async function getStaticPaths() {
+  const events = await getCollection('events');
+  return events.map((e) => ({ params: { id: e.id } }));
+}
+
+const { id } = Astro.params;
+const event = await getEntry('events', id!);
+if (!event) throw new Error(`Evento no encontrado: ${id}`);
+
+const photos = (await getCollection('eventPhotos'))
+  .filter((p) => p.data.evento.id === event.id)
+  .sort((a, b) => b.data.fecha.valueOf() - a.data.fecha.valueOf());
+
+const coverPhoto = photos.find((p) => p.data.destacada) ?? photos[0];
+const ogImage = coverPhoto ? await getOgImageUrl(coverPhoto.data.imagen, coverPhoto.data.ancho, coverPhoto.data.alto) : undefined;
+---
+
+<BaseLayout title={event.data.nombre} description={event.data.descripcion ?? `Fotos de ${event.data.nombre}.`} image={ogImage}>
+  <Breadcrumbs items={[{ label: 'Eventos', href: '/eventos' }, { label: event.data.nombre }]} />
+  <h1>{event.data.nombre}</h1>
+  <p class="meta-list">
+    {event.data.fecha.toLocaleDateString('es-ES')}
+    {event.data.lugar && ` · ${event.data.lugar}`}
+  </p>
+  <p class="tag-list">
+    <span class="tag">{event.data.tipo}</span>
+  </p>
+  {event.data.descripcion && <p>{event.data.descripcion}</p>}
+
+  {
+    photos.length === 0 ? (
+      <p>Todavía no hay fotos publicadas de este evento.</p>
+    ) : (
+      <div class="photo-grid">
+        {photos.map((photo) => (
+          <PhotoCard
+            id={photo.id}
+            imagen={photo.data.imagen}
+            titulo={photo.data.titulo}
+            ancho={photo.data.ancho}
+            alto={photo.data.alto}
+            galleryGroup={`evento-${event.id}`}
+          />
+        ))}
+      </div>
+    )
+  }
+</BaseLayout>

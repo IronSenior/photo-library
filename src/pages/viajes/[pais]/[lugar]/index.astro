@@ -1,0 +1,69 @@
+---
+import BaseLayout from '../../../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../../../components/Breadcrumbs.astro';
+import PhotoCard from '../../../../components/PhotoCard.astro';
+import { getCollection, getEntry } from 'astro:content';
+import { slugify } from '../../../../utils/slugify';
+import { getOgImageUrl } from '../../../../utils/images';
+
+export async function getStaticPaths() {
+  const travels = await getCollection('travels');
+  return travels.map((t) => ({ params: { pais: slugify(t.data.pais), lugar: t.id } }));
+}
+
+const { pais, lugar } = Astro.params;
+const travel = await getEntry('travels', lugar!);
+if (!travel) throw new Error(`Viaje no encontrado: ${lugar}`);
+
+const photos = (await getCollection('travelPhotos'))
+  .filter((p) => p.data.viaje.id === travel.id)
+  .sort((a, b) => b.data.fecha.valueOf() - a.data.fecha.valueOf());
+
+const coverPhoto = photos.find((p) => p.data.destacada) ?? photos[0];
+const ogImage = coverPhoto ? await getOgImageUrl(coverPhoto.data.imagen, coverPhoto.data.ancho, coverPhoto.data.alto) : undefined;
+---
+
+<BaseLayout
+  title={travel.data.lugar}
+  description={travel.data.descripcion ?? `Fotos de ${travel.data.lugar}.`}
+  image={ogImage}
+>
+  <Breadcrumbs
+    items={[
+      { label: 'Viajes', href: '/viajes' },
+      { label: travel.data.pais, href: `/viajes/${pais}` },
+      { label: travel.data.lugar },
+    ]}
+  />
+  <h1>{travel.data.lugar}</h1>
+  <p class="meta-list">
+    {travel.data.fecha_inicio?.toLocaleDateString('es-ES')}
+    {
+      travel.data.fecha_fin &&
+        travel.data.fecha_inicio &&
+        travel.data.fecha_fin.getTime() !== travel.data.fecha_inicio.getTime() &&
+        ` – ${travel.data.fecha_fin.toLocaleDateString('es-ES')}`
+    }
+  </p>
+  {travel.data.descripcion && <p>{travel.data.descripcion}</p>}
+
+  {
+    photos.length === 0 ? (
+      <p>Todavía no hay fotos publicadas de este viaje.</p>
+    ) : (
+      <div class="photo-grid">
+        {photos.map((photo) => (
+          <PhotoCard
+            id={photo.id}
+            imagen={photo.data.imagen}
+            titulo={photo.data.titulo}
+            subtitulo={photo.data.ubicacion}
+            ancho={photo.data.ancho}
+            alto={photo.data.alto}
+            galleryGroup={`viaje-${travel.id}`}
+          />
+        ))}
+      </div>
+    )
+  }
+</BaseLayout>

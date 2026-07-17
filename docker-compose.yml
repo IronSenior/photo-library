@@ -1,0 +1,15 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # Read from a root .env file (copy .env.example) or the shell
+        # environment. Both are public/non-secret build-time values — see
+        # .env.example and README.md for details.
+        PUBLIC_R2_BASE_URL: ${PUBLIC_R2_BASE_URL:-}
+        PUBLIC_SITE_URL: ${PUBLIC_SITE_URL:-https://photopage.pages.dev}
+    image: photopage:latest
+    ports:
+      - "8080:80"
+    restart: unless-stopped

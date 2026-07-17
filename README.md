@@ -94,6 +94,37 @@ contiene secretos que deban usarse en el build de producción del sitio en sí:
    se usan durante el build del sitio y no deben exponerse ahí.
 5. Cada push a la rama de producción dispara un build y despliegue automáticos.
 
+## Despliegue con Docker (alternativa a Cloudflare Pages)
+
+El sitio es 100% estático, así que la imagen Docker solo compila el sitio en
+un stage de Node y lo sirve con nginx en el stage final — no hay backend
+runtime ni base de datos dentro del contenedor.
+
+```bash
+cp .env.example .env   # rellena PUBLIC_R2_BASE_URL / PUBLIC_SITE_URL si aplica
+docker compose up --build -d
+```
+
+El sitio queda disponible en `http://localhost:8080`. `PUBLIC_R2_BASE_URL` y
+`PUBLIC_SITE_URL` se pasan como *build args* (ver [docker-compose.yml](docker-compose.yml))
+porque Astro los incrusta en el HTML/imágenes generados en build time, no en
+runtime — no hace falta reiniciar el contenedor para cambiarlos, hace falta
+reconstruir la imagen (`docker compose up --build`).
+
+Para construir y ejecutar sin `docker compose`:
+
+```bash
+docker build -t photopage \
+  --build-arg PUBLIC_R2_BASE_URL=https://tu-bucket.r2.dev \
+  --build-arg PUBLIC_SITE_URL=https://tu-dominio.com \
+  .
+docker run --rm -p 8080:80 photopage
+```
+
+Igual que en Cloudflare Pages, las credenciales de R2
+(`R2_ACCOUNT_ID`/`R2_ACCESS_KEY_ID`/`R2_SECRET_ACCESS_KEY`) no se usan aquí:
+solo son necesarias en tu máquina/CI para subir fotos al bucket.
+
 ## Estructura de contenido
 
 ```

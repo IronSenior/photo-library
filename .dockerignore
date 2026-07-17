@@ -1,0 +1,11 @@
+node_modules
+dist
+.astro
+.git
+.gitignore
+*.log
+npm-debug.log*
+.DS_Store
+.env
+.env.production
+.keystatic

@@ -1,0 +1,11 @@
+{
+  "viaje": "la-rocina-donana",
+  "titulo": "Marisma al atardecer",
+  "fecha": "2025-03-13",
+  "ubicacion": "La Rocina, Doñana",
+  "lat": 37.018,
+  "lng": -6.482,
+  "imagen": "viajes/marisma-al-atardecer.jpg",
+  "destacada": false,
+  "tags": ["atardecer"]
+}

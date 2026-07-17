@@ -1,0 +1,9 @@
+{
+  "evento": "barcelona-software-crafters-2025",
+  "titulo": "Taller de TDD",
+  "fecha": "2025-05-20",
+  "ubicacion": "Barcelona",
+  "imagen": "eventos/taller-de-tdd.jpg",
+  "destacada": false,
+  "tags": ["taller"]
+}

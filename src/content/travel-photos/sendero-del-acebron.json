@@ -1,0 +1,11 @@
+{
+  "viaje": "palacio-del-acebron-donana",
+  "titulo": "Sendero del Acebrón",
+  "fecha": "2025-03-12",
+  "ubicacion": "Palacio del Acebrón, Doñana",
+  "lat": 36.997,
+  "lng": -6.466,
+  "imagen": "viajes/sendero-del-acebron.jpg",
+  "destacada": false,
+  "tags": []
+}

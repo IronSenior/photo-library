@@ -1,0 +1,11 @@
+{
+  "especie": "flamenco-comun",
+  "titulo": "Flamencos en la marisma",
+  "fecha": "2025-03-10",
+  "ubicacion": "Doñana, Huelva",
+  "lat": 37.03,
+  "lng": -6.45,
+  "imagen": "fauna/flamencos-en-la-marisma.jpg",
+  "destacada": false,
+  "tags": ["grupo"]
+}

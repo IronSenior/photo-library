@@ -1,0 +1,12 @@
+{
+  "especie": "aguila-imperial-iberica",
+  "titulo": "Águila imperial en vuelo",
+  "fecha": "2025-03-12",
+  "ubicacion": "Doñana, Huelva",
+  "lat": 37.02,
+  "lng": -6.48,
+  "imagen": "fauna/aguila-imperial-en-vuelo.jpg",
+  "equipo": "Canon EOS R5 + RF 100-500mm",
+  "destacada": true,
+  "tags": ["vuelo"]
+}

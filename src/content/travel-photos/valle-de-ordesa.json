@@ -1,0 +1,11 @@
+{
+  "viaje": "pirineo-aragones",
+  "titulo": "Valle de Ordesa",
+  "fecha": "2024-09-06",
+  "ubicacion": "Valle de Ordesa",
+  "lat": 42.649,
+  "lng": -0.544,
+  "imagen": "viajes/valle-de-ordesa.jpg",
+  "destacada": true,
+  "tags": ["paisaje"]
+}

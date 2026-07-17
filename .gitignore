@@ -1,0 +1,21 @@
+# build output
+dist/
+.astro/
+
+# dependencies
+node_modules/
+
+# environment variables
+.env
+.env.production
+
+# logs
+npm-debug.log*
+*.log
+
+# editor / OS
+.DS_Store
+
+# Keystatic local auth (if ever generated)
+.keystatic/
+

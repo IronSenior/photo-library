@@ -81,6 +81,10 @@ contiene secretos que deban usarse en el build de producción del sitio en sí:
 
 ## Despliegue en Cloudflare Pages
 
+> Para una guía paso a paso completa (crear el bucket de R2, el token de API,
+> el proyecto de Pages y verificar el primer deploy), ver
+> [docs/produccion.md](docs/produccion.md).
+
 1. Conecta el repositorio en el dashboard de Cloudflare Pages.
 2. Configuración de build:
    - **Comando de build**: `npm run build`

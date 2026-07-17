@@ -1,0 +1,56 @@
+---
+import { Image, getImage } from 'astro:assets';
+import { resolvePhotoSrc, FALLBACK_WIDTH, FALLBACK_HEIGHT, isRemotePhoto } from '../utils/images';
+
+interface Props {
+  id: string;
+  imagen: string;
+  titulo: string;
+  subtitulo?: string;
+  ancho?: number;
+  alto?: number;
+  /** Photos sharing the same group become the prev/next set in the lightbox. */
+  galleryGroup: string;
+  /** Extra passthrough attributes, e.g. `data-search` for FilterBar targets. */
+  [dataAttr: `data-${string}`]: string | boolean | undefined;
+}
+
+const { id, imagen, titulo, subtitulo, ancho, alto, galleryGroup, ...rest } = Astro.props;
+const src = resolvePhotoSrc(imagen);
+const remote = isRemotePhoto(src);
+
+const fullWidth = remote ? ancho ?? FALLBACK_WIDTH : src.width;
+const fullHeight = remote ? alto ?? FALLBACK_HEIGHT : src.height;
+
+const thumbWidth = 700;
+const thumbHeight = Math.round((thumbWidth * fullHeight) / fullWidth);
+
+const fullImage = remote
+  ? await getImage({ src, width: fullWidth, height: fullHeight })
+  : await getImage({ src, width: Math.min(fullWidth, 1800) });
+---
+
+<a
+  class="photo-card"
+  href={`/foto/${id}`}
+  data-lightbox-trigger
+  data-lightbox-group={galleryGroup}
+  data-full={fullImage.src}
+  data-caption={titulo}
+  {...rest}
+>
+  {remote ? (
+    <Image src={src} alt={titulo} width={thumbWidth} height={thumbHeight} />
+  ) : (
+    <Image src={src} alt={titulo} width={thumbWidth} />
+  )}
+  <span class="photo-card__caption">
+    {titulo}
+    {subtitulo && (
+      <>
+        <br />
+        <small>{subtitulo}</small>
+      </>
+    )}
+  </span>
+</a>

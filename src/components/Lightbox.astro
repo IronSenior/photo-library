@@ -1,0 +1,78 @@
+---
+// Single overlay instance mounted once in BaseLayout. Any element rendered
+// anywhere on the page with `data-lightbox-trigger` (see PhotoCard.astro)
+// is picked up automatically — no per-page wiring needed. Works as a
+// progressive enhancement: without JS the trigger is a normal link to
+// `/foto/[id]`.
+---
+
+<div class="lightbox" id="lightbox" data-open="false" role="dialog" aria-modal="true" aria-label="Foto ampliada">
+  <button class="lightbox__close" id="lightbox-close" type="button" aria-label="Cerrar">✕</button>
+  <button class="lightbox__prev" id="lightbox-prev" type="button" aria-label="Foto anterior">‹</button>
+  <img id="lightbox-image" alt="" />
+  <p class="lightbox__caption" id="lightbox-caption"></p>
+  <button class="lightbox__next" id="lightbox-next" type="button" aria-label="Foto siguiente">›</button>
+</div>
+
+<script>
+  type TriggerEl = HTMLElement & { dataset: { full?: string; caption?: string; lightboxGroup?: string } };
+
+  const overlay = document.getElementById('lightbox');
+  const imageEl = document.getElementById('lightbox-image') as HTMLImageElement | null;
+  const captionEl = document.getElementById('lightbox-caption');
+  const closeBtn = document.getElementById('lightbox-close');
+  const prevBtn = document.getElementById('lightbox-prev');
+  const nextBtn = document.getElementById('lightbox-next');
+
+  let currentGroup: TriggerEl[] = [];
+  let currentIndex = 0;
+
+  function triggersInSameGroup(trigger: TriggerEl): TriggerEl[] {
+    const group = trigger.dataset.lightboxGroup;
+    const all = Array.from(document.querySelectorAll<TriggerEl>('[data-lightbox-trigger]'));
+    if (!group) return [trigger];
+    return all.filter((el) => el.dataset.lightboxGroup === group);
+  }
+
+  function show(index: number) {
+    if (!overlay || !imageEl || !captionEl || currentGroup.length === 0) return;
+    currentIndex = (index + currentGroup.length) % currentGroup.length;
+    const trigger = currentGroup[currentIndex];
+    imageEl.src = trigger.dataset.full ?? '';
+    imageEl.alt = trigger.dataset.caption ?? '';
+    captionEl.textContent = trigger.dataset.caption ?? '';
+    overlay.dataset.open = 'true';
+    const hasMultiple = currentGroup.length > 1;
+    prevBtn?.toggleAttribute('hidden', !hasMultiple);
+    nextBtn?.toggleAttribute('hidden', !hasMultiple);
+  }
+
+  function close() {
+    if (!overlay) return;
+    overlay.dataset.open = 'false';
+    if (imageEl) imageEl.src = '';
+  }
+
+  document.addEventListener('click', (event) => {
+    const trigger = (event.target as HTMLElement)?.closest<TriggerEl>('[data-lightbox-trigger]');
+    if (!trigger) return;
+    event.preventDefault();
+    currentGroup = triggersInSameGroup(trigger);
+    show(currentGroup.indexOf(trigger));
+  });
+
+  closeBtn?.addEventListener('click', close);
+  prevBtn?.addEventListener('click', () => show(currentIndex - 1));
+  nextBtn?.addEventListener('click', () => show(currentIndex + 1));
+
+  overlay?.addEventListener('click', (event) => {
+    if (event.target === overlay) close();
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (overlay?.dataset.open !== 'true') return;
+    if (event.key === 'Escape') close();
+    if (event.key === 'ArrowLeft') show(currentIndex - 1);
+    if (event.key === 'ArrowRight') show(currentIndex + 1);
+  });
+</script>

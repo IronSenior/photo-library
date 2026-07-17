@@ -1,0 +1,40 @@
+---
+interface Props {
+  placeholder?: string;
+  /** CSS selector (unique per page) for the filterable item elements. Each
+   * matched element should carry a `data-search="..."` attribute with the
+   * text to match against; falls back to the element's own text content. */
+  itemSelector: string;
+  emptyMessage?: string;
+}
+
+const { placeholder = 'Buscar…', itemSelector, emptyMessage = 'No se han encontrado resultados.' } = Astro.props;
+---
+
+<div class="filter-bar" data-filter-bar data-item-selector={itemSelector}>
+  <input type="search" placeholder={placeholder} aria-label={placeholder} />
+</div>
+<p class="filter-empty" data-filter-empty>{emptyMessage}</p>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-filter-bar]').forEach((bar) => {
+    const input = bar.querySelector('input');
+    const selector = bar.dataset.itemSelector;
+    const emptyMsg = bar.parentElement?.querySelector<HTMLElement>('[data-filter-empty]');
+    if (!input || !selector) return;
+
+    const items = Array.from(document.querySelectorAll<HTMLElement>(selector));
+
+    input.addEventListener('input', () => {
+      const query = input.value.trim().toLowerCase();
+      let visible = 0;
+      for (const item of items) {
+        const haystack = (item.dataset.search ?? item.textContent ?? '').toLowerCase();
+        const matches = haystack.includes(query);
+        item.style.display = matches ? '' : 'none';
+        if (matches) visible += 1;
+      }
+      if (emptyMsg) emptyMsg.style.display = query && visible === 0 ? 'block' : 'none';
+    });
+  });
+</script>

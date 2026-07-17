@@ -1,0 +1,93 @@
+---
+import '../styles/global.css';
+import Lightbox from '../components/Lightbox.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  image?: string;
+  noindex?: boolean;
+}
+
+const { title, description, image, noindex = false } = Astro.props;
+const siteTitle = 'Objetivo Salvaje';
+const pageTitle = title ? `${title} · ${siteTitle}` : siteTitle;
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+const ogImage = image ? new URL(image, Astro.site).toString() : undefined;
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    {noindex && <meta name="robots" content="noindex" />}
+    <link rel="canonical" href={canonicalURL} />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalURL} />
+    {ogImage && <meta property="og:image" content={ogImage} />}
+    <meta name="twitter:card" content={ogImage ? 'summary_large_image' : 'summary'} />
+
+    <script is:inline>
+      // Applied before paint to avoid a flash of the wrong theme. Dark is
+      // the default per project-definition.md §5; a saved preference wins.
+      const saved = localStorage.getItem('theme');
+      if (saved === 'light') {
+        document.documentElement.dataset.theme = 'light';
+      }
+    </script>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="site-header__inner">
+        <a class="site-logo" href="/">Objetivo Salvaje</a>
+        <nav class="site-nav" aria-label="Navegación principal">
+          <a href="/fauna">Fauna</a>
+          <a href="/viajes">Viajes</a>
+          <a href="/eventos">Eventos</a>
+          <a href="/sobre-mi">Sobre mí</a>
+        </nav>
+        <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Cambiar tema claro/oscuro">
+          <span aria-hidden="true">◐</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="container">
+      <slot />
+    </main>
+
+    <Lightbox />
+
+    <footer class="site-footer">
+      <div class="site-footer__inner">
+        <p>&copy; {new Date().getFullYear()} Objetivo Salvaje. Todas las fotos son propiedad del autor.</p>
+        <p>
+          <a href="https://instagram.com" rel="me">Outdoor.Pepe</a> ·
+          <a href="https://youtube.com" rel="me">SoyPepe.Lab</a>
+        </p>
+      </div>
+    </footer>
+
+    <script is:inline>
+      const toggle = document.getElementById('theme-toggle');
+      toggle?.addEventListener('click', () => {
+        const root = document.documentElement;
+        const isLight = root.dataset.theme === 'light';
+        if (isLight) {
+          delete root.dataset.theme;
+          localStorage.setItem('theme', 'dark');
+        } else {
+          root.dataset.theme = 'light';
+          localStorage.setItem('theme', 'light');
+        }
+      });
+    </script>
+  </body>
+</html>

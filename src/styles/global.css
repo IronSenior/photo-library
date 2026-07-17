@@ -1,0 +1,481 @@
+/* Design tokens — dark theme by default (habitual en portfolios de fotografía,
+   resalta el color de las fotos), con alternativa clara opcional. */
+:root {
+  --bg: #12131a;
+  --bg-elevated: #1b1d26;
+  --bg-elevated-2: #23262f;
+  --text: #f2efe6;
+  --text-muted: #a9a6a0;
+  --accent: #d98e4a;
+  --accent-strong: #e8a75f;
+  --border: #2d303a;
+  --shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.6);
+  --radius: 10px;
+  --max-width: 1200px;
+  --font-heading: Georgia, 'Times New Roman', serif;
+  --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+}
+
+:root[data-theme='light'] {
+  --bg: #f7f5f0;
+  --bg-elevated: #ffffff;
+  --bg-elevated-2: #eeebe3;
+  --text: #1b1d22;
+  --text-muted: #5b5850;
+  --accent: #b5652c;
+  --accent-strong: #9c521f;
+  --border: #ddd8cc;
+  --shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.15);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-heading);
+  line-height: 1.15;
+  margin: 0 0 0.5em;
+}
+
+p {
+  margin: 0 0 1em;
+}
+
+.container {
+  width: 100%;
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 1.25rem;
+}
+
+/* --- Header / nav --------------------------------------------------- */
+
+.site-header {
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg) 92%, transparent);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  backdrop-filter: blur(6px);
+}
+
+.site-header__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.9rem 1.25rem;
+}
+
+.site-logo {
+  font-family: var(--font-heading);
+  font-size: 1.35rem;
+  letter-spacing: 0.02em;
+}
+
+.site-nav {
+  display: flex;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.site-nav a {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  transition: color 0.15s ease;
+}
+
+.site-nav a:hover,
+.site-nav a[aria-current='page'] {
+  color: var(--accent-strong);
+}
+
+.theme-toggle {
+  background: var(--bg-elevated-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 999px;
+  width: 2.1rem;
+  height: 2.1rem;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+/* --- Footer ---------------------------------------------------------- */
+
+.site-footer {
+  border-top: 1px solid var(--border);
+  margin-top: 4rem;
+  padding: 2rem 1.25rem;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.site-footer__inner {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.site-footer a {
+  color: var(--text-muted);
+  text-decoration: underline;
+  text-decoration-color: var(--border);
+}
+
+/* --- Breadcrumbs ------------------------------------------------------ */
+
+.breadcrumbs {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  padding: 1.25rem 0 0;
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.breadcrumbs li {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.breadcrumbs li:not(:last-child)::after {
+  content: '/';
+  opacity: 0.5;
+}
+
+.breadcrumbs a:hover {
+  color: var(--accent-strong);
+}
+
+/* --- Hero -------------------------------------------------------------- */
+
+.hero {
+  position: relative;
+  min-height: 60vh;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+  border-radius: var(--radius);
+}
+
+.hero img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 40%, rgba(0, 0, 0, 0.75) 100%);
+}
+
+.hero__content {
+  position: relative;
+  z-index: 1;
+  padding: 2rem;
+  color: #f5f2ea;
+}
+
+.hero__content h1 {
+  font-size: clamp(2rem, 5vw, 3.4rem);
+}
+
+/* --- Photo grid: jerarquía visual, no rejilla uniforme ----------------- */
+
+.photo-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
+  margin: 1.5rem 0;
+}
+
+.photo-grid > .photo-card:first-child {
+  grid-column: span 4;
+}
+
+.photo-grid > .photo-card {
+  grid-column: span 2;
+}
+
+@media (min-width: 720px) {
+  .photo-grid > .photo-card:first-child {
+    grid-column: span 2;
+    grid-row: span 2;
+  }
+
+  .photo-grid > .photo-card {
+    grid-column: span 1;
+  }
+}
+
+.photo-card {
+  position: relative;
+  display: block;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--bg-elevated);
+  box-shadow: var(--shadow);
+}
+
+.photo-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  aspect-ratio: 3 / 2;
+  transition: transform 0.35s ease;
+}
+
+.photo-card:first-child img {
+  aspect-ratio: 4 / 3;
+}
+
+.photo-card:hover img {
+  transform: scale(1.04);
+}
+
+.photo-card__caption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 0.6rem 0.75rem;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.75) 100%);
+  color: #f5f2ea;
+  font-size: 0.85rem;
+}
+
+/* --- Cards for taxonomy listings (clases, órdenes, especies, países) --- */
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.tile-card {
+  display: block;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.1rem;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.tile-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.tile-card h3 {
+  margin-bottom: 0.25rem;
+  font-size: 1.1rem;
+}
+
+.tile-card p {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+/* --- Search / filter ---------------------------------------------------- */
+
+.filter-bar {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin: 1.25rem 0;
+}
+
+.filter-bar input {
+  flex: 1;
+  max-width: 320px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 0.55rem 0.8rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
+}
+
+.filter-bar input:focus {
+  outline: 2px solid var(--accent);
+}
+
+.filter-empty {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  display: none;
+}
+
+/* --- Lightbox ------------------------------------------------------------ */
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(6, 7, 10, 0.92);
+  z-index: 100;
+  padding: 2rem;
+}
+
+.lightbox[data-open='true'] {
+  display: flex;
+}
+
+.lightbox img {
+  max-width: min(90vw, 1400px);
+  max-height: 82vh;
+  width: auto;
+  border-radius: 6px;
+  box-shadow: var(--shadow);
+}
+
+.lightbox__caption {
+  position: absolute;
+  bottom: 1.5rem;
+  left: 0;
+  right: 0;
+  text-align: center;
+  color: #f5f2ea;
+  font-size: 0.9rem;
+}
+
+.lightbox__close,
+.lightbox__prev,
+.lightbox__next {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #f5f2ea;
+  border-radius: 999px;
+  width: 2.6rem;
+  height: 2.6rem;
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lightbox__close {
+  top: 1.5rem;
+  right: 1.5rem;
+}
+
+.lightbox__prev {
+  left: 1.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.lightbox__next {
+  right: 1.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* --- Map ------------------------------------------------------------------ */
+
+.map-container {
+  width: 100%;
+  height: 480px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+}
+
+.map-popup h4 {
+  margin: 0 0 0.25rem;
+  font-size: 0.95rem;
+}
+
+.map-popup a {
+  color: var(--accent-strong);
+  text-decoration: underline;
+}
+
+/* --- Misc ------------------------------------------------------------------ */
+
+.section {
+  margin: 2.5rem 0;
+}
+
+.section__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.tag-list {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin: 0.5rem 0 0;
+}
+
+.tag {
+  background: var(--bg-elevated-2);
+  border-radius: 999px;
+  padding: 0.2rem 0.7rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.meta-list {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}

@@ -83,6 +83,15 @@ lo necesita**, así que no se configura en Pages.
 
 1. Dashboard → **Workers & Pages** → **Create** → pestaña **Pages** →
    **Connect to Git**.
+
+   > **Importante**: usa la pestaña **Pages**, no "Import a repository"
+   > desde Workers. Ese segundo flujo crea un *Worker* gestionado con
+   > Wrangler (pide un campo separado **"Deploy command"**, normalmente
+   > `npx wrangler deploy`) pensado para proyectos con `wrangler.toml`. Este
+   > repo no tiene Worker ni configuración de Wrangler — es un sitio 100%
+   > estático, así que solo necesita el flujo clásico de Pages: build
+   > command + directorio de salida, sin deploy command aparte (el
+   > despliegue es automático en cuanto el build termina).
 2. Autoriza el acceso y elige el repositorio subido en el paso 1.
 3. Configuración de build (Cloudflare detecta el preset "Astro"; verifica
    que quede así):

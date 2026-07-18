@@ -22,3 +22,9 @@ npm-debug.log*
 # CSV de trabajo de scripts/bulk-import-photos.mjs (nunca se commitea)
 **/_import.csv
 
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+!.env.example

@@ -1,9 +1,0 @@
-{
-  "evento": "rock-and-blue-fest-2025",
-  "titulo": "Concierto principal Rock & Blue",
-  "fecha": "2025-07-04",
-  "ubicacion": "Madrid",
-  "imagen": "eventos/concierto-principal-rock-and-blue.jpg",
-  "destacada": true,
-  "tags": ["directo"]
-}

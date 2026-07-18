@@ -19,3 +19,6 @@ npm-debug.log*
 # Keystatic local auth (if ever generated)
 .keystatic/
 
+# CSV de trabajo de scripts/bulk-import-photos.mjs (nunca se commitea)
+**/_import.csv
+

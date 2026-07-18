@@ -68,6 +68,42 @@ genera el JSON correcto. Sí se necesita un cliente git (o la propia terminal)
 para subir el cambio al repositorio, ya que no hay backend ni base de datos que
 persista el contenido por su cuenta.
 
+## Añadir fotos en lote
+
+Repetir el flujo anterior foto a foto no compensa cuando tienes muchas fotos de
+una vez (p. ej. todas las de un viaje). `scripts/bulk-import-photos.mjs`
+automatiza lo mecánico (EXIF, dimensiones, subida a R2, generación del JSON) y
+te deja editar en una hoja de cálculo solo lo que realmente cambia foto a foto.
+
+1. **Crea antes la especie/viaje/evento** al que pertenecen (en Keystatic),
+   igual que en el flujo de una sola foto — el importador necesita su slug.
+2. **Escanea la carpeta con los originales**:
+   ```bash
+   npm run import:photos -- scan fauna ~/fotos/lince-marismas \
+     --ref=lince-iberico --ubicacion="Doñana, Huelva" --lat=37.02 --lng=-6.48
+   ```
+   (`fauna` → `viajes` → `viaje=...`, `eventos` → `evento=...`). Esto genera
+   `_import.csv` dentro de esa carpeta, con una fila por foto y los campos que
+   se pueden inferir ya rellenos (fecha/equipo desde el EXIF de cada archivo).
+3. **Abre el CSV** (Numbers/Excel/Sheets) y completa lo que falte: `titulo` es
+   obligatorio en cada fila; `tags` se separan con `;`; `destacada` es `true`/
+   `false`/vacío. Los valores compartidos (ubicación, lat/lng, referencia) ya
+   vienen rellenos en todas las filas — solo tienes que tocar las excepciones.
+4. **Aplica el CSV**:
+   ```bash
+   npm run import:photos -- apply fauna ~/fotos/lince-marismas
+   ```
+   Valida todas las filas primero (sin subir ni escribir nada si hay algún
+   error), y si todo es correcto sube cada original a R2 (usando las
+   credenciales `R2_*` de tu `.env`) y crea un `.json` por foto en
+   `src/content/fauna-photos/`. Añade `--no-upload` si ya has subido las fotos
+   aparte (asume la misma ruta `<coleccion>/<slug-título>.<ext>` en el bucket).
+5. **Revisa el diff y haz commit/push** como en el flujo normal — el propio
+   comando te recuerda `git add`/`commit`/`push` al terminar.
+
+`_import.csv` es un fichero de trabajo (está en `.gitignore`); una vez
+ aplicado puedes borrarlo.
+
 ## Variables de entorno
 
 Copia `.env.example` a `.env` y ajusta los valores. Ninguna de estas variables
